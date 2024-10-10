@@ -32,5 +32,5 @@ cd searchIn
 3. Instale as dependências:
 pip install -r requirements.txt
 
-4. Inicie o programa
+4. Inicie o programa:
 python app.py
