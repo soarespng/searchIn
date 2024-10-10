@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn hunter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Login</h1>
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="input-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="input-group">
+                    <label for="search">Palavra-chave de busca</label>
+                    <input type="text" id="search" name="search" required>
+                </div>
+                <div class="input-group">
+                    <label for="num_pages">Número de páginas</label>
+                    <input type="number" id="num_pages" name="num_pages" min="1" value="1" required>
+                </div>
+                <div class="input-group">
+                    <label for="keywords">Palavras-chave (separadas por vírgula)</label>
+                    <input type="text" id="keywords" name="keywords" required>
+                </div>
+                <button type="submit" class="btn">Buscar</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

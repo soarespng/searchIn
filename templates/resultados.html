@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Busca</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='resultados.css') }}">
+</head>
+<body>
+    <div class="body-container">
+        <h1>Resultados da Busca</h1>
+        
+        <div class="card-container">
+            {% for result in results %}
+            <div class="card">
+                <h2>{{ result.name }}</h2>
+                <p><strong>Ocupação:</strong> {{ result.occupation }}</p>
+                <p><strong>Compatibilidade:</strong> {{ result.compatibility }}</p>
+                <a href="{{ result.link }}" target="_blank">Ver Perfil</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
