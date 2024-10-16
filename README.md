@@ -33,4 +33,4 @@ cd searchIn
 pip install -r requirements.txt
 
 4. Inicie o programa
-python app.py
+python api/app.py
