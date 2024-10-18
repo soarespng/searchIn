@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 from selenium import webdriver
+from urllib.parse import quote
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
@@ -8,6 +10,12 @@ import time
 import re
 
 app = Flask(__name__)
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
 
 @app.route('/')
 def index():
@@ -25,7 +33,7 @@ def login():
     return render_template('resultados.html', results=results)
 
 def search_linkedin(username, password, search_keyword, num_paginas, palavras_chave):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     result_data = []
 
     try:
@@ -37,16 +45,21 @@ def search_linkedin(username, password, search_keyword, num_paginas, palavras_ch
         username_input.send_keys(username)
         password_input.send_keys(password)
         login_button.click()
-        time.sleep(35)
+        time.sleep(2)
 
         for page in range(1, num_paginas + 1):
-            url_pesquisa = f'https://www.linkedin.com/search/results/people/?keywords={search_keyword}&page={page}'
+            url_pesquisa = f'https://www.linkedin.com/search/results/people/?geoUrn=%5B"103025174"%5D&keywords={quote(search_keyword)}&page={page}'
             driver.get(url_pesquisa)
-            time.sleep(5)
+            time.sleep(2)
+
             page_source = driver.page_source
             soup = BeautifulSoup(page_source, 'html.parser')
             perfis = soup.find_all('a', class_='app-aware-link scale-down')
             hrefs = [perfil['href'] for perfil in perfis if 'href' in perfil.attrs and 'miniProfileUrn' in perfil['href']]
+
+            if not hrefs:
+                print(f"Não há mais resultados na página {page}. Parando a busca.")
+                break
 
             for href in hrefs:
                 driver.get(href)
@@ -57,6 +70,8 @@ def search_linkedin(username, password, search_keyword, num_paginas, palavras_ch
 
     finally:
         driver.quit()
+
+    result_data.sort(key=lambda x: float(x['compatibility'].replace('%', '')), reverse=True)
 
     return result_data
 
@@ -75,19 +90,25 @@ def verificar_palavras_chave_e_ocupacao(html, palavras_chave, perfil_link):
         conteudo_total += section_text + '\n'
 
     conteudo_total = conteudo_total.lower()
-    palavras_encontradas = 0
+    palavras_encontradas = []
+    palavras_nao_encontradas = []
+
     for palavra in palavras_chave:
         padrao_exato = r'\b' + re.escape(palavra) + r'\b'
         if re.search(padrao_exato, conteudo_total):
-            palavras_encontradas += 1
+            palavras_encontradas.append(palavra)
+        else:
+            palavras_nao_encontradas.append(palavra)
 
-    compatibilidade = (palavras_encontradas / len(palavras_chave)) * 100
+    compatibilidade = (len(palavras_encontradas) / len(palavras_chave)) * 100
 
     return {
         'name': name.get_text(strip=True) if name else 'N/A',
         'link': perfil_link,
         'occupation': occupation.get_text(strip=True) if occupation else 'N/A',
-        'compatibility': f"{compatibilidade:.2f}%"
+        'compatibility': f"{compatibilidade:.2f}%",
+        'palavras_encontradas': palavras_encontradas,
+        'palavras_nao_encontradas': palavras_nao_encontradas
     }
 
 if __name__ == "__main__":

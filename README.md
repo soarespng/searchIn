@@ -20,6 +20,7 @@ O **searchIn** é uma ferramenta construída em Flask que automatiza o processo 
 - Selenium
 - BeautifulSoup4
 - Webdriver Manager
+- Gunicorn
 
 ## Instalação
 
